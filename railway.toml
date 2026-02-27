@@ -4,6 +4,6 @@ builder = "nixpacks"
 [deploy]
 startCommand = "uvicorn chess_coach.api.server:app --host 0.0.0.0 --port ${PORT:-8000}"
 healthcheckPath = "/api/health"
-healthcheckTimeout = 30
+healthcheckTimeout = 60
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3

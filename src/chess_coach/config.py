@@ -3,13 +3,30 @@
 from __future__ import annotations
 
 import os
+import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
+
+# Common Stockfish install locations
+_STOCKFISH_CANDIDATES = [
+    "stockfish",                    # on PATH
+    "/usr/games/stockfish",         # apt install stockfish (Debian/Ubuntu)
+    "/usr/local/bin/stockfish",     # brew / manual install
+    "/usr/bin/stockfish",           # some distros
+]
+
+
+def _find_stockfish() -> str:
+    """Find the Stockfish binary, checking common install locations."""
+    for candidate in _STOCKFISH_CANDIDATES:
+        if shutil.which(candidate):
+            return candidate
+    return "stockfish"  # fallback, will fail with a clear error later
 
 
 @dataclass
 class Config:
-    stockfish_path: str = "stockfish"
+    stockfish_path: str = field(default_factory=_find_stockfish)
     stockfish_depth: int = 20
     stockfish_threads: int = 2
     stockfish_hash_mb: int = 256

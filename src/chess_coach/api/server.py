@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -14,19 +15,26 @@ from chess_coach.engine.stockfish import StockfishEngine
 from chess_coach.storage.database import Database
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Manage Stockfish engine and database lifecycle."""
     config: Config = app.state.config
+
+    # Start Stockfish
     engine = StockfishEngine(
         path=config.stockfish_path,
         depth=config.stockfish_depth,
         threads=config.stockfish_threads,
         hash_mb=config.stockfish_hash_mb,
     )
-    engine.start()
+    try:
+        engine.start()
+        logger.info("Stockfish started at: %s", config.stockfish_path)
+    except Exception as e:
+        logger.error("Failed to start Stockfish at '%s': %s", config.stockfish_path, e)
     app.state.engine = engine
 
     db = Database(config.db_path)
